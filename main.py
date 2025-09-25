@@ -1,5 +1,6 @@
 import argparse
 import torch
+from torch.autograd.gradcheck import _test_undefined_backward_mode
 import torch.nn as nn
 import torch.optim as optim
 from explain_gnn import *
@@ -17,7 +18,7 @@ import numpy as np
 stop_dict = {
     "BAMultiShapes": 0.8,
     "BBBP": 0.96,
-    "Mutagenicity": 0.96,
+    "Mutagenicity": 0.76,
     "IMDB-BINARY": 0.7350,
     "NCI1": 0.7,
     "reddit_threads": 0.8,
@@ -178,12 +179,50 @@ def main():
     start_time = time.time()
     gnn_train_pred_tensor, train_y_tensor, train_x_dict, train_edge_dict, train_activations_dict, train_gnn_graph_embed = get_all_activations_graph(train_loader,model,device)
     gnn_test_pred_tensor, test_y_tensor, test_x_dict, test_edge_dict, test_activations_dict, test_gnn_graph_embed = get_all_activations_graph(test_loader,model,device)
-    
+    save_dir="."
+#     torch.save({
+#     "pred_tensor": gnn_train_pred_tensor.cpu(),
+#     "y_tensor": train_y_tensor.cpu(),
+#     "x_dict": train_x_dict,
+#     "edge_dict": train_edge_dict,
+#     "activations_dict": train_activations_dict,
+#     "graph_embed": train_gnn_graph_embed,
+# }, os.path.join(save_dir, "train_results.pt"))
 
+# # Save testing results
+#     torch.save({
+#         "pred_tensor": gnn_test_pred_tensor.cpu(),
+#         "y_tensor": test_y_tensor.cpu(),
+#         "x_dict": test_x_dict,
+#         "edge_dict": test_edge_dict,
+#         "activations_dict": test_activations_dict,
+#         "graph_embed": test_gnn_graph_embed,
+#     }, os.path.join(save_dir, "test_results.pt"))
+    X = train_gnn_graph_embed
+
+    # y = train_y_tensor 
+
+    y =  gnn_train_pred_tensor  # explain gnn so use pred_tensor thats predicted results on train data by GNN
+
+
+
+    # Train a Decision Tree Classifier
+    clf = DecisionTreeClassifier(max_depth=1, random_state=42)  # Adjust max_depth as needed
+    clf.fit(X, y)
+
+    # Predict on the test set
+    y_pred = clf.predict(X)
+    # Compute accuracy
+    accuracy = accuracy_score(y, y_pred)
+    print(f"Accuracy: {accuracy:.4f}")
+
+    
     clf,index_0_correct,index_1_correct=decision_tree_explainer(train_gnn_graph_embed,gnn_train_pred_tensor,test_gnn_graph_embed,gnn_test_pred_tensor,max_depth=1)
     tree = clf.tree_
     val_idx = tree.feature[0]
     threshold = tree.threshold[0]
+    y_pred = clf.predict(train_gnn_graph_embed)
+    print("Accuracy of decision tree on training set: ", accuracy_score(gnn_train_pred_tensor, y_pred))
     predicates, predicate_to_idx, predicate_node, predicate_graph_class_0, predicate_graph_class_1, rules_matrix_0, rules_matrix_1 = get_predicates_bin_one_pass(index_0_correct,index_1_correct,train_x_dict, train_edge_dict, train_activations_dict, val_idx, threshold, use_embed = use_embed , k_hops = k_hops)
     # Create mapping from predicate to index
     predicates_idx_mapping = {predicate: idx for idx, predicate in enumerate(predicates)}
@@ -205,20 +244,33 @@ def main():
     # -----------------------
     # Accuracy (vs ground truth)
     # -----------------------
-    y_true_acc = test_y_tensor.cpu().numpy()
-    y_pred_acc = clf_graph.predict(test_res.T)
+    y_true = test_y_tensor.cpu().numpy()
+    y_pred = clf_graph.predict(test_res.T)
+    gnn_pred=gnn_test_pred_tensor.numpy().ravel()
+    test_acc = accuracy_score(y_true, gnn_pred)
 
-    test_acc = accuracy_score(y_true_acc, y_pred_acc)
-    prec_acc, rec_acc, f1_acc, _ = precision_recall_fscore_support(
-        y_true_acc, y_pred_acc, average="weighted"
-    )
-
+    weighted_accuracy = accuracy_score(y_true, y_pred,sample_weight=[class_weights_map[label] for label in y_true])
+    test_fid=accuracy_score(gnn_pred, y_pred)
+    weighted_fidelity=accuracy_score(gnn_pred, y_pred,sample_weight=[class_weights_map[label] for label in y_true])
+    prec_gt, rec_gt, f1_gt, _ = precision_recall_fscore_support(
+        y_true, y_pred, average="weighted")
+    prec_fid, rec_fid, f1_fid, _ = precision_recall_fscore_support(
+        gnn_pred, y_pred, average="weighted")
+    print(f"Test Accuracy (ground truth) (unweighted): {test_acc * 100:.2f}%")
+    print(f"Test Accuracy (ground truth) (weighted): {weighted_accuracy * 100:.2f}%")
+    print(f"Test Fidelity (vs GNN) (unweighted): {test_fid * 100:.2f}%")
+    print(f"Test Fidelity (vs GNN) (weighted): {weighted_fidelity * 100:.2f}%")
+    print(f"Test Precision (ground truth) (weighted): {prec_gt * 100:.2f}%")
+    print(f"Test Recall (ground truth) (weighted): {rec_gt * 100:.2f}%")
+    print(f"Test F1 Score (ground truth) (weighted): {f1_gt * 100:.2f}%")
+    print(f"Test Precision (fidelity) (weighted): {prec_fid * 100:.2f}%")
+    print(f"Test Recall (fidelity) (weighted): {rec_fid * 100:.2f}%")
+    print(f"Test F1 Score (fidelity) (weighted): {f1_fid * 100:.2f}%")
+    
     # -----------------------
     # Print results
     # -----------------------
-    print(f"Performance for {args.dataset}_{args.seed}_{args.arch}")
-    print(f"  Fidelity → Acc: {fidelity_acc:.4f}, Prec: {prec_fid:.4f}, Rec: {rec_fid:.4f}, F1: {f1_fid:.4f}")
-    print(f"  Accuracy → Acc: {test_acc:.4f}, Prec: {prec_acc:.4f}, Rec: {rec_acc:.4f}, F1: {f1_acc:.4f}")
+    
     ## end(BAshape, IMDB, large3)
     if not use_node_features:
         end_time = time.time()
