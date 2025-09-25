@@ -14,7 +14,6 @@ def get_all_activations_graph(t_loader, model, device, optimizer=None):
         'conv1': {},
         'relu1': {},
         'conv2': {},
-        'relu2': {},
         # conv3 will be added dynamically if present
         'global_pool': {},
         'fc': {}
@@ -44,14 +43,14 @@ def get_all_activations_graph(t_loader, model, device, optimizer=None):
         batch_size = len(data_list)
 
         # Split activations by node for each graph
-        conv1_split, relu1_split, conv2_split, relu2_split, conv3_split = [], [], [], [], []
+        conv1_split, relu1_split, conv2_split, conv3_split = [], [], [], []
         node_ptr = 0
         for i in range(batch_size):
             num_nodes = data_list[i].x.shape[0]
             conv1_split.append(act['conv1'][node_ptr:node_ptr + num_nodes])
             relu1_split.append(act['relu1'][node_ptr:node_ptr + num_nodes])
             conv2_split.append(act['conv2'][node_ptr:node_ptr + num_nodes])
-            relu2_split.append(act['relu2'][node_ptr:node_ptr + num_nodes])
+            #relu2_split.append(act['relu2'][node_ptr:node_ptr + num_nodes])
             if "conv3" in act:  # ✅ only if present
                 conv3_split.append(act['conv3'][node_ptr:node_ptr + num_nodes])
             node_ptr += num_nodes
@@ -64,7 +63,7 @@ def get_all_activations_graph(t_loader, model, device, optimizer=None):
             activations_dict['conv1'][graph_idx] = conv1_split[i]
             activations_dict['relu1'][graph_idx] = relu1_split[i]
             activations_dict['conv2'][graph_idx] = conv2_split[i]
-            activations_dict['relu2'][graph_idx] = relu2_split[i]
+            #activations_dict['relu2'][graph_idx] = relu2_split[i]
             if "conv3" in act:
                 # Add conv3 slot if not already present
                 if 'conv3' not in activations_dict:

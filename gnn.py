@@ -28,7 +28,7 @@ class GCN(nn.Module):
         x = F.relu(x); activations['relu1'] = x.detach().clone()
 
         x = self.conv2(x, edge_index); activations['conv2'] = x.detach().clone()
-        x = F.relu(x); activations['relu2'] = x.detach().clone()
+        # x = F.relu(x); activations['relu2'] = x.detach().clone()
 
         if self.use_conv3:
             x = self.conv3(x, edge_index); activations['conv3'] = x.detach().clone()
@@ -98,7 +98,7 @@ class GAT(nn.Module):
         x = F.elu(x); acts['relu1'] = x.detach().clone()
 
         x = self.conv2(x, edge_index); acts['conv2'] = x.detach().clone()
-        x = F.elu(x); acts['relu2'] = x.detach().clone()
+        #x = F.elu(x); acts['relu2'] = x.detach().clone()
 
         if self.use_conv3:
             x = self.conv3(x, edge_index); acts['conv3'] = x.detach().clone()
@@ -131,7 +131,7 @@ class GraphSAGE(nn.Module):
         x = F.relu(x); acts['relu1'] = x.detach().clone()
 
         x = self.conv2(x, edge_index); acts['conv2'] = x.detach().clone()
-        x = F.relu(x); acts['relu2'] = x.detach().clone()
+        #x = F.relu(x); acts['relu2'] = x.detach().clone()
 
         if self.use_conv3:
             x = self.conv3(x, edge_index); acts['conv3'] = x.detach().clone()

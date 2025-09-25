@@ -652,9 +652,82 @@ def get_the_rule_iso_z(p_idx, used_iso_predicate_node, train_x_dict, atom_type_d
     instance = instance_0 + instance_1
     instance = np.array(instance)
     # ----- Train decision tree -----
-    clf = DecisionTreeClassifier(max_depth=depth, random_state=42)
-    clf.fit(z_concat, z_label)
+    
+    n_samples = len(z_concat)
 
+    max_depth = depth if depth is not None else None
+
+
+
+    # --- Attempt 1: Train with your preferred "Hybrid" (stricter) parameters ---
+
+    
+
+    # Define a threshold for what constitutes a "very small" dataset.
+
+    if n_samples < 10:
+
+        min_split = 2
+
+        min_leaf = 1
+
+    else:
+
+        # Your preferred adaptive logic for the general case
+
+        min_split = max(5, n_samples // 20)
+
+        min_leaf = max(3, n_samples // 50)
+
+    
+
+    # Ensure logical consistency
+
+    if min_split < 2 * min_leaf:
+
+        min_split = 2 * min_leaf
+
+
+
+    print("Attempt 1: Training with stricter (hybrid) parameters...")
+
+    clf = DecisionTreeClassifier(
+
+        max_depth=max_depth, 
+
+        min_samples_split=min_split,
+
+        min_samples_leaf=min_leaf,
+
+        ccp_alpha=0.001,
+
+        class_weight='balanced',  # ADD THIS LINE
+
+        random_state=42
+
+    )
+    clf.fit(z_concat, z_label)
+    if clf.tree_.node_count == 1 and n_samples > 1:
+
+        print("Attempt 1 resulted in a stump. Falling back to lenient parameters...")
+
+        
+
+        # --- Attempt 2: Fallback to the "Simple" (most lenient) parameters ---
+
+        clf = DecisionTreeClassifier(
+
+            max_depth=max_depth, 
+
+            random_state=42
+
+        )
+
+        clf.fit(z_concat, z_label)
+
+    else:
+
+        print("Attempt 1 was successful. Using the hybrid-parameter tree.")
 
     # get the ground rules for the class 1
     used_feature_indices = set(clf.tree_.feature[clf.tree_.feature != _tree.TREE_UNDEFINED])
@@ -1365,7 +1438,7 @@ def explain_predicate_with_rules(
     clf, z_concat, z_label, ground_rules = get_the_rule_iso_z(
         p_idx, used_iso_predicate_node,
         train_x_dict, atom_type_dict, train_edge_dict,
-        one_hot=one_hot, k_hops=k_hops, depth=depth,
+        one_hot=one_hot, k_hops=k_hops, depth=None,
         adds=adds, verbose=verbose
     )
     if not ground_rules:

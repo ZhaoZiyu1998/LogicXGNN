@@ -1,0 +1,85 @@
+# ======================================
+# Python cache & build files
+# ======================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+
+# ======================================
+# Environments
+# ======================================
+.venv/
+venv/
+env/
+*.conda/
+*.virtualenv/
+.ipynb_checkpoints/
+.env
+
+# ======================================
+# IDE / Editor configs
+# ======================================
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ======================================
+# Logs & outputs
+# ======================================
+*.log
+*.out
+*.err
+*.txt
+nohup.out
+
+# ======================================
+# Datasets & checkpoints
+# ======================================
+data/
+datasets/
+models/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.npz
+*.npy
+
+# ======================================
+# Experiment results
+# ======================================
+results/
+outputs/
+runs/
+wandb/
+tensorboard/
+lightning_logs/
+
+# ======================================
+# Notebooks
+# ======================================
+*.ipynb
+*.ipynb_checkpoints/
+
+# ======================================
+# System files
+# ======================================
+Thumbs.db
+./Mutagenicity
+./notebooks
+./plot
+./plot_bbbp_mutag
+./run1.sh
+./run2.sh
+./run3.sh
+./summary.csv
+run*.sh
+summary.csv
+fi
