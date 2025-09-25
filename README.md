@@ -1,21 +1,22 @@
-# 🧩 LogicGNN: Graph Neural Networks with Rule-Based Explanations
+# 🧩 LOGICXGNN: GROUNDED LOGICAL RULES FOR EXPLAINING GRAPH NEURAL NETWORKS
 
-This repository provides an experimental framework for training Graph Neural Networks (GNNs) and extracting interpretable logic-based rules from their predictions. It combines standard GNN architectures with decision tree–based explanations and orbit-based grounding.
+This is the official repository of **LogicXGNN**.
 
 ---
 
 ## 📌 Features
 
 - Multiple GNN backbones:
-  - **GCN**, **GIN**, **GAT**, **GraphSAGE**
+  - **GCN**, **GIN**, **GAT**, **GraphSAGE**, and etc.
 - Wide range of datasets:
   - **Molecule datasets**: BBBP, Mutagenicity, NCI1  
   - **Synthetic**: BAMultiShapes  
   - **Social**: IMDB-BINARY, Reddit, Twitch, GitHub stargazers
 - Explanation modules:
-  - Extract intermediate activations from GNN layers
-  - Fit surrogate **Decision Trees** for interpretability
-  - Subgraph grounding with orbit decomposition and predicate extraction
+  - Derive **predicates** from GNN embeddings and the underlying message-passing topology.
+  - Extract **logical rules** over these predicates to approximate and interpret GNN decisions.
+  - Efficiently **ground predicates** into representative subgraphs, supported by general grounding rules.
+
 - Training utilities:
   - Class-balanced weights
   - Checkpoint saving/loading
@@ -32,7 +33,7 @@ repo/
 ├── main.py            # Main training + explanation pipeline
 ├── utils.py           # Training, testing, model checkpointing
 ├── explain_gnn.py     # Activation extraction + decision tree explainer
-├── grounding.py       # Orbit decomposition + grounding predicates
+├── grounding.py       # Grounding predicates
 ├── models/            # Saved checkpoints (created at runtime)
 ├── plot/              # Generated plots (created at runtime)
 └── readme/            # This file
@@ -45,8 +46,8 @@ repo/
 Clone the repo and set up dependencies:
 
 ```bash
-git clone https://github.com/your-username/logicgnn.git
-cd logicgnn
+wget https://anonymous.4open.science/r/LogicXGNN-ICRL2026/
+cd LogicXGNN-ICRL2026
 
 conda create -n logicgnn python=3.10
 conda activate logicgnn
