@@ -47,11 +47,13 @@ cd logicgnn
 conda create -n logicgnn python=3.10
 conda activate logicgnn
 pip install torch torch-geometric scikit-learn matplotlib networkx
+
 ## 🛠 Usage
 
 ### Training a Model
 ```bash
 python main.py --dataset BBBP --arch GCN --seed 42
+```
 Arguments
 
 --dataset: one of BBBP, Mutagenicity, IMDB-BINARY, NCI1, BAMultiShapes, reddit_threads, twitch_egos, github_stargazers
@@ -66,8 +68,9 @@ Arguments
 Example
 
 Train a GIN on Mutagenicity:
-
+``` bash
 python main.py --dataset Mutagenicity --arch GIN --seed 1
+```
 📊 Explanation Pipeline
 
 Train or load a GNN model.
