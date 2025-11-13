@@ -193,7 +193,8 @@ def plot_k_hop_subgraph(
                                ha="center", transform=target_ax.transAxes)
         else:
             target_ax.set_title(f"{k}-hop subgraph around node {center_index}")
-
+        #fig= target_ax.get_figure()
+        #fig.savefig(f"subgraph_{graph_idx}_center_{center_index}_k_{k}.png")
         target_ax.axis("off")
 
     return edges, nodes_attributes, center_index, wl_hash
@@ -623,7 +624,7 @@ def get_the_rule_iso_z(p_idx, used_iso_predicate_node, train_x_dict, atom_type_d
     z_res_0 = []
     instance_0 = []
     for graph_idx, center_index in used_iso_predicate_node[p_idx][b_0]:
-        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, center_index, train_x_dict, train_edge_dict, atom_type_dict,  nodes_attr = one_hot, title_ = None, k=k_hops, plot=0, show_node_idx = 0)    
+        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, center_index, train_x_dict, train_edge_dict, atom_type_dict,  nodes_attr = one_hot, title_ = None, k=k_hops, plot=1, show_node_idx = 0)    
         original_label_map, original_orbits = stable_orbits_with_anchor(edges, center_index)
         merged_orbits, merged_label_map = merge_orbits_by_distance_with_paths(
             edges, original_orbits, original_label_map
@@ -636,7 +637,7 @@ def get_the_rule_iso_z(p_idx, used_iso_predicate_node, train_x_dict, atom_type_d
     z_res_1 = []
     instance_1 = []
     for graph_idx, center_index in used_iso_predicate_node[p_idx][b_1]:
-        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, center_index, train_x_dict, train_edge_dict, atom_type_dict,  nodes_attr = one_hot, title_ = None, k=k_hops, plot=0, show_node_idx = 0)    
+        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, center_index, train_x_dict, train_edge_dict, atom_type_dict,  nodes_attr = one_hot, title_ = None, k=k_hops, plot=1, show_node_idx = 0)    
         original_label_map, original_orbits = stable_orbits_with_anchor(edges, center_index)
         merged_orbits, merged_label_map = merge_orbits_by_distance_with_paths(
             edges, original_orbits, original_label_map
@@ -1381,7 +1382,7 @@ def parse_ground_rules_pattern_refined(p_idx, ground_rules,  train_x_dict, train
 
     for k, v in ground_rules.items():
         graph_idx, center_index = v[0]
-        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, int(center_index), train_x_dict, train_edge_dict, atom_type_dict, nodes_attr = one_hot, title_ = None, k=k_hops, plot=0, show_node_idx = 0)
+        edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(graph_idx, int(center_index), train_x_dict, train_edge_dict, atom_type_dict, nodes_attr = one_hot, title_ = None, k=k_hops, plot=1, show_node_idx = 0)
         original_label_map, original_orbits = stable_orbits_with_anchor(edges, center_index)
         merged_orbits, merged_label_map = merge_orbits_by_distance_with_paths(edges, original_orbits, original_label_map)
         results = process_feature_conditions(merged_orbits, atom_type_dict, k)
@@ -1463,7 +1464,7 @@ def explain_predicate_with_rules(
         edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(
             graph_idx, center_index,
             train_x_dict, train_edge_dict, atom_type_dict,
-            title_=None, k=k_hops, plot=0, show_node_idx=0, nodes_attr=one_hot, grounding=False
+            title_=None, k=k_hops, plot=1, show_node_idx=0, nodes_attr=one_hot, grounding=False
         )
         if verbose:
             print(f"Graph {graph_idx}, center {center_index} → WL hash {wl_hash}")
@@ -1485,8 +1486,9 @@ def explain_predicate_with_rules(
         for ax, key in zip(axes, top_k_keys):
             node_list = hash_dict_sorted[key]
             if node_list:
-                coverage_ratio = len(node_list) / total_nodes
-                title_str = f"Coverage: {coverage_ratio:.2%}"
+                # coverage_ratio = len(node_list) / total_nodes
+                # title_str = f"Coverage: {coverage_ratio:.2%}"
+                title_str = f"Pattern covering {len(node_list)} instances"
                 graph_idx, center_index = node_list[0]
                 plot_k_hop_subgraph(
                     graph_idx, center_index,
@@ -1590,7 +1592,33 @@ def save_all_alone_predicates(used_alone_predicates, x_dict, edge_dict,
         )
         
 
+def plot_alone_predicate_explanation(p, graph_idx, center_index, train_x_dict, train_edge_dict, k, ax=None):
+    # Extract k-hop subgraph
+    edge_tensor = train_edge_dict[graph_idx]
+    x_tensor = train_x_dict[graph_idx]
 
+    # Extract k-hop subgraph
+    subset, sub_edge_index, mapping, _ = k_hop_subgraph(
+        center_index, k, edge_tensor, relabel_nodes=True
+    )
+
+    # Create PyG Data object for subgraph
+    sub_x = x_tensor[subset]
+    sub_data = Data(x=sub_x, edge_index=sub_edge_index)
+
+    # Convert to NetworkX graph
+    G = to_networkx(sub_data, to_undirected=True)
+
+    pos = nx.spring_layout(G, seed=42)
+    target_ax = ax if ax is not None else plt.gca()
+    target_ax.clear()
+
+    nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=500, ax=target_ax)
+    nx.draw_networkx_edges(G, pos, edge_color='gray', ax=target_ax)
+
+    target_ax.set_title(f"The explanation graphs for p_{p}", fontsize=14, y=1.01)
+    target_ax.axis('off')
+    
 def grounded_graph_predictions(
     test_dataset,
     test_x_dict,
@@ -1636,7 +1664,7 @@ def grounded_graph_predictions(
             edges, nodes_attributes, center_index, wl_hash = plot_k_hop_subgraph(
                 graph_idx, center, test_x_dict, test_edge_dict,
                 atom_type_dict, nodes_attr=one_hot,
-                title_=None, k=k_hops, plot=0, show_node_idx=0
+                title_=None, k=k_hops, plot=0, show_node_idx=1
             )
 
             # Case 1: predicate with classifier
