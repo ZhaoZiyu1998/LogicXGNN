@@ -213,6 +213,11 @@ def main():
     # Predict on the test set
     y_pred = clf.predict(X)
     # Compute accuracy
+    ## make sure y and y_pred are numpy arrays use if if they are tensors
+    if torch.is_tensor(y):
+        y = y.cpu().numpy()
+    if torch.is_tensor(y_pred):
+        y_pred = y_pred.cpu().numpy()
     accuracy = accuracy_score(y, y_pred)
     print(f"Accuracy: {accuracy:.4f}")
 
@@ -222,7 +227,7 @@ def main():
     val_idx = tree.feature[0]
     threshold = tree.threshold[0]
     y_pred = clf.predict(train_gnn_graph_embed)
-    print("Accuracy of decision tree on training set: ", accuracy_score(gnn_train_pred_tensor, y_pred))
+    print("Accuracy of decision tree on training set: ", accuracy_score(gnn_train_pred_tensor.cpu().numpy(), y_pred))
     predicates, predicate_to_idx, predicate_node, predicate_graph_class_0, predicate_graph_class_1, rules_matrix_0, rules_matrix_1 = get_predicates_bin_one_pass(index_0_correct,index_1_correct,train_x_dict, train_edge_dict, train_activations_dict, val_idx, threshold, use_embed = use_embed , k_hops = k_hops)
     # Create mapping from predicate to index
     predicates_idx_mapping = {predicate: idx for idx, predicate in enumerate(predicates)}
@@ -272,10 +277,11 @@ def main():
     # -----------------------
     
     ## end(BAshape, IMDB, large3)
-    if not use_node_features:
-        end_time = time.time()
-        print(f"Time taken for {args.dataset}_{args.seed}_{args.arch} without node features: {end_time - start_time:.2f} seconds")
-        exit()
+    # if not use_node_features:
+    #     end_time = time.time()
+    #     print(f"Time taken for {args.dataset}_{args.seed}_{args.arch} without node features: {end_time - start_time:.2f} seconds")
+    #     exit()
+    print("-------------------------Grounding and Evaluating-------------------------")
     used_alone_predicates, used_iso_predicate_node = analyze_used_predicate_nodes(predicate_node, predicate_to_idx, used_predicates)
 
     iso_predicates_inference = {} 
