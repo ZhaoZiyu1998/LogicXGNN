@@ -1488,7 +1488,7 @@ def explain_predicate_with_rules(
             if node_list:
                 # coverage_ratio = len(node_list) / total_nodes
                 # title_str = f"Coverage: {coverage_ratio:.2%}"
-                title_str = f"Pattern covering {len(node_list)} instances"
+                title_str = None
                 graph_idx, center_index = node_list[0]
                 plot_k_hop_subgraph(
                     graph_idx, center_index,

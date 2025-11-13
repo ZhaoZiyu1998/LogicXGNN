@@ -72,8 +72,7 @@ python main.py --dataset BBBP --arch GCN --seed 42
 - `--seed`: random seed (default: 0)
 - `--load`: load a pretrained model
 - `--max_depth`: maximum depth for decision tree explanations
-- `--plot_alone`: whether to plot alone predicates (default: 0)
-- `--plot_iso`: whether to plot isomorphic predicates (default: 0)
+- `--plot`: whether to plot predicates (default: 0)
 
 ### Example
 

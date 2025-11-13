@@ -48,8 +48,8 @@ def main():
     default="GCN",
     help="GNN architecture to use"
 )
-    parser.add_argument("--plot_alone", type=int, default=0, help="Whether to plot alone predicates")
-    parser.add_argument("--plot_iso", type=int, default=0, help="Whether to plot isolated predicates")
+    parser.add_argument("--plot", type=int, default=0, help="Whether to plot predicates")
+
     args = parser.parse_args()
 
     # Set device
@@ -286,7 +286,7 @@ def main():
     print("-------------------------Grounding and Evaluating-------------------------")
     used_alone_predicates, used_iso_predicate_node = analyze_used_predicate_nodes(predicate_node, predicate_to_idx, used_predicates)
     print(used_alone_predicates)
-    if args.plot_alone:
+    if args.plot:
         for wl, v in used_alone_predicates.items():
             p, node_list = v
             
@@ -299,7 +299,7 @@ def main():
             plot_alone_predicate_explanation(p, graph_idx, center_index, train_x_dict, train_edge_dict, k=k_hops)
             plt.tight_layout()
             os.makedirs(f"./plot/{args.dataset}/{args.seed}/{args.arch}/alone", exist_ok=True)
-            plt.savefig(f"./plot/{args.dataset}/{args.seed}/{args.arch}/alone/predicate_{p}_graph_{graph_idx}_node_{center_index}.png")
+            plt.savefig(f"./plot/{args.dataset}/{args.seed}/{args.arch}/alone/predicate_{p}.png")
     iso_predicates_inference = {} 
 
     used_iso_predicates = list(used_iso_predicate_node.keys())
@@ -318,7 +318,7 @@ def main():
         top_k=1,
         save_dir=f"./plot/{args.dataset}/{args.seed}/{args.arch}/iso",
         verbose=0,
-        plot=args.plot_iso
+        plot=args.plot
     )
             hashs.append(h)
     #print(hashs)
