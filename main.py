@@ -285,7 +285,6 @@ def main():
     #     exit()
     print("-------------------------Grounding and Evaluating-------------------------")
     used_alone_predicates, used_iso_predicate_node = analyze_used_predicate_nodes(predicate_node, predicate_to_idx, used_predicates)
-    print(used_alone_predicates)
     if args.plot:
         for wl, v in used_alone_predicates.items():
             p, node_list = v
@@ -300,27 +299,31 @@ def main():
             plt.tight_layout()
             os.makedirs(f"./plot/{args.dataset}/{args.seed}/{args.arch}/alone", exist_ok=True)
             plt.savefig(f"./plot/{args.dataset}/{args.seed}/{args.arch}/alone/predicate_{p}.png")
+            plt.close()
     iso_predicates_inference = {} 
 
     used_iso_predicates = list(used_iso_predicate_node.keys())
     hashs=[]
-    for p in used_iso_predicates:
-            h=explain_predicate_with_rules(
-        p_idx=p,
-        used_iso_predicate_node=used_iso_predicate_node,
-        train_x_dict=train_x_dict,
-        train_edge_dict=train_edge_dict,
-        atom_type_dict=atom_type_dict,
-        idx_predicates_mapping=idx_predicates_mapping,
-        iso_predicates_inference=iso_predicates_inference,
-        one_hot=one_hot,
-        k_hops=k_hops,
-        top_k=1,
-        save_dir=f"./plot/{args.dataset}/{args.seed}/{args.arch}/iso",
-        verbose=0,
-        plot=args.plot
-    )
-            hashs.append(h)
+    print("Used iso predicates:", used_iso_predicates)
+    if atom_type_dict!={}:
+        for p in used_iso_predicates:
+                h=explain_predicate_with_rules(
+            p_idx=p,
+            used_iso_predicate_node=used_iso_predicate_node,
+            train_x_dict=train_x_dict,
+            train_edge_dict=train_edge_dict,
+            atom_type_dict=atom_type_dict,
+            idx_predicates_mapping=idx_predicates_mapping,
+            iso_predicates_inference=iso_predicates_inference,
+            one_hot=one_hot,
+            k_hops=k_hops,
+            top_k=1,
+            save_dir=f"./plot/{args.dataset}/{args.seed}/{args.arch}/iso",
+            verbose=0,
+            plot=args.plot
+        )
+                hashs.append(h)
+                
     #print(hashs)
     #print("Final iso_predicates_inference:", iso_predicates_inference)
 

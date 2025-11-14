@@ -1095,8 +1095,10 @@ def process_feature_conditions(eq_sets, atom_type_dict, condition):
         len_ = len(atom_type_dict)
     
     # Parse the condition string
+
     parsed_conditions = parse_conditions(condition)
-    
+    print(f"Parsed conditions: {parsed_conditions}")
+    print("Condition:", condition)
     results = []
     
     for feature_idx, operator, threshold in parsed_conditions:
